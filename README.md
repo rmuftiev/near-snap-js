@@ -3,7 +3,7 @@ SNAP Connection with NEAR Counter Example in Rust
 
 ## To run SNAP
 
-`git clone https://github.com/rmuftiev/snap-near-rpc.git`
+`git clone https://github.com/rmuftiev/snap-near-js-api.git`
 `cd snap-near-rpc`
 `chmod +x ./scripts/cleanup.sh`
 `./scripts/cleanup.sh`
