@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Near Snap</title>
+  <link rel="stylesheet" href="./src/assets/css/global.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <link rel="icon" type="image/svg" href="../images/icon.svg" />
+</head>
+
+<body>
+  <div class="container">
+    <div class="row">
+      <h1>Snap Counter</h1>
+      <hr>
+
+      <div class="sign-in">
+        <p>Please login with Near to interact.</p>
+        <button class="btn btn-primary">Sign In</button>
+      </div>
+      <div class="sign-out">
+        <p>Wallet: <span id="account-id"></span></p>
+        <button class="btn btn-primary">Sign Out</button>
+      </div>
+      <hr class="mt-4 mb-0">
+
+      <div class="col-12 number">
+        <div id="show"></div>
+      </div>
+      <hr>
+
+      <div class="col-6">
+        <button id="minus" class="btn btn-danger interact">- Minus</button>
+      </div>
+      <div class="col-6">
+        <button id="plus" class="btn btn-success interact">+ Plus</button>
+      </div>
+      <div class="col-12">
+        <button id="reset" class="btn btn-secondary interact">Reset</button>
+      </div>
+
+    </div>
+
+    <div class="row">
+      <div class="col-12"><button class="btn btn-secondary connect">Connect</button></div>
+      <div class="col-12"><button class="btn btn-secondary fetchGas">Fetch Eth gas</button></div>
+      <div class="col-12"><button class="btn btn-secondary test">Test wallet_shap_SnapId</button></div>
+      <div class="col-12"><button class="btn btn-secondary permission">Get Permission</button></div>
+      <div class="col-12"><button class="btn btn-secondary entropy">Get Entropy</button></div>
+      <div class="col-12"><button class="btn btn-secondary notify">Notify</button></div>
+      <div class="col-12"></div><button class="btn btn-secondary rpc">Near RPC request</button>
+    </div>
+  </div>
+
+
+  </div>
+</body>
+
+<script>
+  const snapId = `local:${window.location.href}`;
+
+  const connectButton = document.querySelector('button.connect')
+  const getGasButton = document.querySelector('button.fetchGas')
+  const testButton = document.querySelector('button.test')
+  const snapsButton = document.querySelector('button.snaps')
+  const permissionButton = document.querySelector('button.permission')
+  const entropyButton = document.querySelector('button.entropy')
+  const notifyButton = document.querySelector('button.notify')
+  const rpcButton = document.querySelector('button.rpc')
+
+  connectButton.addEventListener('click', connect)
+  getGasButton.addEventListener('click', getGas)
+  testButton.addEventListener('click', testRestrictedMethod)
+  snapsButton.addEventListener('click', getSnaps)
+  permissionButton.addEventListener('click', getPermission)
+  entropyButton.addEventListener('click', getEntropy)
+  notifyButton.addEventListener('click', notify)
+  rpcButton.addEventListener('click', rpcRequest)
+
+  // here we get permissions to interact with and install the snap
+  async function connect() {
+    await ethereum.request({
+      method: 'wallet_enable',
+      params: [{
+        wallet_snap: { [snapId]: {} },
+      }]
+    })
+  }
+
+  async function getPermission() {
+    const response = await ethereum.request({
+      method: 'wallet_getPermissions'
+    })
+    console.log(response)
+
+  }
+
+  async function getSnaps() {
+    const result = await ethereum.request({ method: 'wallet_getSnaps' });
+    console.log(result);
+  }
+
+  // here we call the snap's "gas" method
+  async function getGas() {
+    try {
+      const response = await ethereum.request({
+        method: 'wallet_invokeSnap',
+        params: [snapId, {
+          method: 'gas'
+        }]
+      })
+      console.log(response)
+    } catch (err) {
+      console.error(err)
+      alert('Problem happened: ' + err.message || err)
+    }
+  }
+
+  // here we call the snap's restricted method
+  async function testRestrictedMethod() {
+    console.log('wallet_snap_' + snapId)
+    try {
+      const response = await ethereum.request({
+        method: 'wallet_snap_' + snapId,
+        params: [{
+          method: 'custom'
+        }]
+      })
+      console.log(response)
+    } catch (err) {
+      console.log('catch')
+      console.error(err)
+      alert('Problem happened: ' + err.message || err)
+    }
+  }
+
+  // here we call the snap's "notify" method
+  async function notify() {
+    try {
+      const response = await ethereum.request({
+        method: 'wallet_snap_' + snapId,
+        params: [{
+          method: 'notify'
+        }]
+      })
+    } catch (err) {
+      console.error(err)
+      alert('Problem happened: ' + err.message || err)
+    }
+  }
+
+
+  // here we call the snap's "gas" method
+  async function getEntropy() {
+    console.log('here1')
+
+    try {
+      console.log('here2')
+      const response = await ethereum.request({
+        method: 'wallet_invokeSnap',
+        params: [snapId, {
+          method: 'entropy'
+        }]
+      })
+      console.log(response)
+    } catch (err) {
+      console.log('here-err')
+      console.error(err)
+      alert('Problem happened: ' + err.message || err)
+    }
+  }
+
+
+  //RPC Methods
+  async function rpcRequest() {
+    console.log('rpc1');
+    const metadata1 = JSON.parse(await viewAccount());
+    console.log(metadata1.result);
+    const metadata2 = JSON.parse(await callNearFunc());
+    console.log(String.fromCharCode(metadata2.result.result));
+    const metadata3 = JSON.parse(await getGas());
+    console.log(metadata3.result);
+  }
+
+
+  async function viewAccount() {
+    console.log('rpc2');
+    networkUrl = "https://archival-rpc.testnet.near.org";
+    let response = await fetch(networkUrl, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        "jsonrpc": "2.0",
+        "id": "dontcare",
+        "method": "query",
+        "params": {
+          "request_type": "view_account",
+          "finality": "final",
+          "account_id": "rasim1.testnet"
+        }
+      })
+    });
+    return response.text();
+  }
+
+  async function callNearFunc() {
+    console.log('rpc3');
+    networkUrl = "https://archival-rpc.testnet.near.org";
+    let response = await fetch(networkUrl, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        "jsonrpc": "2.0",
+        "id": "dontcare",
+        "method": "query",
+        "params": {
+          "request_type": "call_function",
+          "finality": "final",
+          "account_id": "acn-hackdays.testnet",
+          "method_name": "get_num",
+          "args_base64": "e30="
+        }
+      })
+    });
+    return response.text();
+  }
+
+  async function getGas() {
+    console.log('rpc4');
+    networkUrl = "https://archival-rpc.testnet.near.org";
+    let response = await fetch(networkUrl, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        "jsonrpc": "2.0",
+        "id": "dontcare",
+        "method": "gas_price",
+        "params": [null]
+      })
+    });
+    return response.text();
+  }
+
+</script>
+<!--<script src="./src/assets/js/near/utils.js"></script>-->
+
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Near Snap</title>
+  <link rel="stylesheet" href="./src/assets/css/global.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="icon" type="image/svg" href="./images/icon.svg"/>
+</head>
+
+<body>
+  <div class="container">
+    <div class="row">
+      <h1>Snap Counter</h1>
+      <hr>
+
+      <div class="sign-in">
+        <p>Please login with Near to interact.</p>
+        <button class="btn btn-primary">Sign In</button>
+      </div>
+      <div class="sign-out">
+        <p>Wallet: <span id="account-id"></span></p>
+        <button class="btn btn-primary">Sign Out</button>
+      </div>
+      <hr class="mt-4 mb-0">
+
+      <div class="col-12 number">
+        <div id="show"></div>
+      </div>
+      <hr>
+
+      <div class="col-6">
+        <button id="minus" class="btn btn-danger interact">- Minus</button>
+      </div>
+      <div class="col-6">
+        <button id="plus" class="btn btn-success interact">+ Plus</button>
+      </div>
+      <div class="col-12">
+        <button id="reset" class="btn btn-secondary interact">Reset</button>
+      </div>
+
+    </div>
+
+    <div class="row">
+      <button class="btn btn-secondary connect">Connect</button>
+      <button class="btn btn-secondary sendHello">Send Hello</button>
+      <button class="btn btn-secondary test">Test component</button>
+      <button class="btn btn-secondary snaps">Get Snaps</button>
+      <button class="btn btn-secondary permission">Get Permission</button>
+      <button class="btn btn-secondary entropy">Get Entropy</button>
+      <button class="btn btn-secondary notify">Notify</button>
+    </div>
+
+
+  </div>
+</body>
+
+<script>
+  const snapId = `local:${window.location.href}`;
+
+  const connectButton = document.querySelector('button.connect')
+  const sendButton = document.querySelector('button.sendHello')
+  const testButton = document.querySelector('button.test')
+  const snapsButton = document.querySelector('button.snaps')
+  const permissionButton = document.querySelector('button.permission')
+  const entropyButton = document.querySelector('button.entropy')
+  const notifyButton = document.querySelector('button.notify')
+
+  connectButton.addEventListener('click', connect)
+  sendButton.addEventListener('click', send)
+  testButton.addEventListener('click', mytest)
+  snapsButton.addEventListener('click', getSnaps)
+  permissionButton.addEventListener('click', getPermission)
+  entropyButton.addEventListener('click', getEntropy)
+  notifyButton.addEventListener('click', notify)
+
+  // here we get permissions to interact with and install the snap
+  async function connect () {
+    await ethereum.request({
+      method: 'wallet_enable',
+      params: [{
+        wallet_snap: { [snapId]: {} },
+      }]
+    })
+  }
+
+  async function getPermission () {
+    const response = await ethereum.request({
+      method: 'wallet_getPermissions'
+    })  
+    console.log(response)
+
+  }
+
+
+  async function getSnaps() {
+    const result = await ethereum.request({ method: 'wallet_getSnaps' });
+    console.log(result);    
+  }
+
+  // here we call the snap's "hello" method
+  async function send () {
+    try {
+      const response = await ethereum.request({
+        method: 'wallet_invokeSnap',
+        params: [snapId, {
+          method: 'hello'
+        }]
+      })
+      console.log (response)
+    } catch (err) {
+      console.error(err)
+      alert('Problem happened: ' + err.message || err)
+    }
+  }
+
+  // here we call the snap's test method
+  async function mytest () {
+    console.log('wallet_snap_' + snapId)
+    try {
+      const response = await ethereum.request({
+        method: 'wallet_snap_' + snapId,
+        params: [ {
+          method: 'custom'
+        }]
+      })
+      console.log (response)
+    } catch (err) {
+      console.log('catch')
+      console.error(err)
+      alert('Problem happened: ' + err.message || err)
+    }
+  }
+
+  // here we call the snap's "notify" method
+  async function notify () {
+    try {
+      const response = await ethereum.request({
+        method: 'wallet_snap_' + snapId,
+        params: [{
+          method: 'notify'
+        }]
+      })
+    } catch (err) {
+      console.error(err)
+      alert('Problem happened: ' + err.message || err)
+    }
+  }
+
+
+  // here we call the snap's "hello" method
+  async function getEntropy () {
+    console.log('here1')
+    
+    try {
+      console.log('here2')
+      const response = await ethereum.request({
+        method: 'wallet_invokeSnap',
+        params: [snapId, {
+          method: 'entropy'
+        }]
+      })
+      console.log (response)
+    } catch (err) {
+      console.log('here-err')
+      console.error(err)
+      alert('Problem happened: ' + err.message || err)
+    }
+  }
+
+</script>
+<script src="./src/assets/js/main.js"></script>
+
+</html>
