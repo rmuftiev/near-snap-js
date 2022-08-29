@@ -47,6 +47,7 @@
       <div class="col-12"><button class="btn btn-secondary connect">Connect</button></div>
       <div class="col-12"><button class="btn btn-secondary fetchGas">Fetch Eth gas</button></div>
       <div class="col-12"><button class="btn btn-secondary test">Test wallet_shap_SnapId</button></div>
+      <div class="col-12"><button class="btn btn-secondary snaps">Get Snaps</button></div>
       <div class="col-12"><button class="btn btn-secondary permission">Get Permission</button></div>
       <div class="col-12"><button class="btn btn-secondary entropy">Get Entropy</button></div>
       <div class="col-12"><button class="btn btn-secondary notify">Notify</button></div>
@@ -177,7 +178,15 @@
   async function rpcRequest() {
     console.log('rpc1');
     const metadata1 = JSON.parse(await viewAccount());
-    console.log(metadata1.result);
+    console.log(metadata1);
+
+    let amount = metadata1.result.amount.toString();
+    console.log("Amount: " + amount);
+    let block_hash = metadata1.result.block_hash;
+    console.log("Block Hash: " + block_hash);
+    let block_height = metadata1.result.block_height;
+    console.log("Block Height: " + block_height)
+
     const metadata2 = JSON.parse(await callNearFunc());
     console.log(String.fromCharCode(metadata2.result.result));
     const metadata3 = JSON.parse(await getGas());
